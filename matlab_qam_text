@@ -1,0 +1,45 @@
+clc;
+clear all;
+close all;
+
+numDataBits = 40000;
+txData = randi([0 1],numDataBits,1);
+fileID = fopen('dotext.txt','w');
+fprintf(fileID,'%d\n',txData);
+fclose(fileID);
+
+fprintf('Reading data from text file... \n');
+fileID = fopen('dotext.txt');
+rxDataSource = fscanf(fileID,'%d');
+fclose(fileID);
+
+bps = 4;
+M = 2^bps; % 16-QAM
+
+txDataSymbols = reshape(rxDataSource,bps,[])';
+
+txDataChar = char(txDataSymbols + '0');
+txDataDec = bin2dec(txDataChar);
+
+modulatedSignal = qammod(txDataDec,M,'UnitAveragePower',true);
+
+EbNo_dB = 10;
+snr_dB = EbNo_dB + 10*log10(bps);
+
+noisySignal = awgn(modulatedSignal,snr_dB,'measured');
+
+demodulatedDataDec = qamdemod(noisySignal,M,'UnitAveragePower',true);
+
+demodCharSymbols = dec2bin(demodulatedDataDec,bps);
+demodNumSymbols = demodCharSymbols - '0';
+
+demodulatedData = reshape(demodNumSymbols',[],1);
+
+[numErrors,ber] = biterr(rxDataSource,demodulatedData);
+
+fprintf('Bit Error Rate (BER): %f\n',ber);
+fprintf('Number of Errors: %d out of %d bits \n',numErrors,numDataBits);
+
+constellation = comm.ConstellationDiagram('ShowReferenceConstellation',false, ...
+    'Title','Received Signal Constellation');
+constellation(noisySignal);
