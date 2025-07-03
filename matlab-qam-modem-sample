@@ -1,0 +1,32 @@
+% Modulation properties
+M = 256; % modulation order
+k = log2(M); % number of bits per symbol, 8-bits per symbol
+numBits = 1000*k; % number of bits, multiplied by k
+EbNo_dB = 15; % energy per bit to noise spectral density
+
+% Input data
+inputData = randi([0 1], numBits, 1); % uniformly distributed random integer with value 0 or 1 in numBits-by-1 size
+reshapeData = reshape(inputData, [], k); % reshapre inputData into k-bit symbols
+
+% Modulation process
+modulatedData = qammod(reshapeData, M, ...
+    'UnitAveragePower',true);
+
+% Transmission channel
+snr_dB = EbNo_dB + 10*log10(k); % convert Eb/No to Signal-to-Noise Ratio
+channelData = awgn(modulatedData, snr_dB, 'measured');
+
+%% At the receiving side
+% Demodulation process
+demodData = qamdemod(channelData, M, 'UnitAveragePower', true);
+receivedData = reshape(demodData, [], 1);
+
+% Compute BER
+[numErrors, bitErrors] = biterr(inputData, receivedData);
+fprintf('Number of Bit Errors: %d\n', numErrors);
+fprintf('Bit Error Rate: %f\n', bitErrors);
+
+constDiagram = comm.ConstellationDiagram( ...
+    'Title', 'Received 256-QAM', ...
+    'ReferenceConstellation', qammod(0:M-1, M, 'UnitAveragePower',true));
+constDiagram(channelData);
