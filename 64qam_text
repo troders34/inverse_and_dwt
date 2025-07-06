@@ -1,0 +1,41 @@
+clc;
+clear;
+
+% MODULATION ------------------------------
+%input
+sourceID = fopen("send.txt", 'r', 'n', 'US-ASCII'); % each character in the source text will represent to ASCII characters.
+intSource = fread(sourceID);    % will read the data type as integer
+fclose(sourceID);
+source2Bin = dec2bin(intSource, 8);    % convert each character to 8-bit binary row
+bitStreamSource = reshape(source2Bin', 1, []);  % reshape into binary row-vector
+%properties
+M = 256;
+k = log2(M);
+numBits_source = length(bitStreamSource);  
+modulo_bits = mod(numBits_source, k);      % remainder after division
+if modulo_bits ~= 0
+    pad_bits = k - modulo_bits;
+    bitStreamSource = [bitStreamSource, repmat('0', 1, pad_bits)];
+end
+new_bitstream_structure = reshape(bitStreamSource, k, []).';
+sourceSymbols = bin2dec(new_bitstream_structure);
+%modulating
+modulatedSource = qammod(sourceSymbols, M, 'UnitAveragePower', true, 'InputType', 'integer');
+%plot on constellation
+constDiagram = comm.ConstellationDiagram( ...
+    'Title', 'Modulated 64-QAM', ...
+    'ReferenceConstellation', qammod(0:M-1, M, 'UnitAveragePower', true), ...
+    'ReferenceColor', [1 1 0]);
+constDiagram(modulatedSource);
+
+% DEMODULATION ------------------------------
+demodulatedSource = qamdemod(modulatedSource, M, 'UnitAveragePower', true, 'OutputType', 'integer', 'OutputDataType', 'double');
+receivedSymbols = dec2bin(demodulatedSource, k);
+receivedBits = reshape(receivedSymbols.', [], 1);
+disp('64-QAM Demodulated Bits');
+disp(receivedBits(1:20).');  % showing 20 binary digits of demodulated bits
+disp('End');
+%display result by a text file
+resultID = fopen('demodulated_source.txt', 'w');
+fprintf(resultID, '%d', receivedBits);
+fclose(resultID);
