@@ -1,0 +1,34 @@
+clc;
+clear;
+
+% REED-SOLOMON ENCODING
+%properties
+mRS = 3;          % number of bits per symbol;
+nRS = 2^mRS - 1;  % codeword length
+kRS = 4;          % message length, so the parity=3 and coderate=4/7
+%input and conversion
+sourceID = fopen('send.txt', 'r', 'b', 'US-ASCII');
+sourceChar = fread(sourceID, 'uchar');
+fclose(sourceID);
+char2Binary= dec2bin(sourceChar, 8);  % 8-bit representation, read from right-to-left
+%char2Binary = dec2bin(sourceChar, 7);  % 7-bit representation, read from right-to-left
+numericBin = char2Binary - '0';
+sourceBitstream= reshape(numericBin', 1, []);
+numBits_source = length(sourceBitstream);
+modulo_bits = mod(numBits_source, kRS);
+if modulo_bits ~= 0
+    pad_bits = kRS - modulo_bits;
+    sourceBitstream = [sourceBitstream, repmat('0', 1, pad_bits)];
+end
+new_bitstream_structure = reshape(sourceBitstream, kRS, []).';
+%encoding
+msg = gf(numericBin, mRS);
+code = rsenc(msg, nRS, kRS);
+imSource = imread('danielBurka_travel640.jpg');
+imshow(imSource);
+title('Original Truecolor Image');
+[height, width, channel] = size(imSource);
+fprintf('Information to Image size: \n');
+fprintf('Height: %d px\n', height);
+fprintf('Width: %d px\n', width);
+fprintf('Channel number characteristic: %d\n', channel);
