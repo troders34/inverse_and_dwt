@@ -1,0 +1,73 @@
+id: waveletofdm_waveletdwt
+label: Wavelet DWT (db4, general)
+category: '[waveletofdm]'
+flags: [python]
+
+templates:
+  imports: from gnuradio import waveletofdm
+  make: waveletofdm.waveletdwt(${nsc}, ${level}, ${wavelet}, ${mode}, ${pack_order}, ${packet_len_key}, ${align_to_tag}, ${use_pywt}, ${debug})
+
+#  Make one 'parameters' list entry for every parameter you want settable from the GUI.
+#     Keys include:
+#     * id (makes the value accessible as keyname, e.g. in the make entry)
+#     * label (label shown in the GUI)
+#     * dtype (e.g. int, float, complex, byte, short, xxx_vector, ...)
+#     * default
+parameters:
+- id: nsc
+  label: Subcarriers (N)
+  dtype: int
+  default: 128
+- id: level
+  label: Levels
+  dtype: int
+  default: 4
+- id: wavelet
+  label: Wavelet
+  dtype: string
+  default: db4
+- id: mode
+  label: Boundary mode
+  dtype: string
+  default: periodization
+- id: pack_order
+  label: Pack order
+  dtype: string
+  default: A|D
+- id: packet_len_key
+  label: Packet length tag key
+  dtype: string
+  default: packet_len
+- id: align_to_tag
+  label: Align to packet_len tag
+  dtype: bool
+  default: True
+- id: use_pywt
+  label: Use PyWavelets
+  dtype: bool
+  default: True
+- id: debug
+  label: Debug
+  dtype: bool
+  default: False
+
+#  Make one 'inputs' list entry per input and one 'outputs' list entry per output.
+#  Keys include:
+#      * label (an identifier for the GUI)
+#      * domain (optional - stream or message. Default is stream)
+#      * dtype (e.g. int, float, complex, byte, short, xxx_vector, ...)
+#      * vlen (optional - data stream vector length. Default is 1)
+#      * optional (optional - set to 1 for optional inputs. Default is 0)
+inputs:
+- domain: stream
+  dtype: complex
+  label: in
+
+outputs:
+- domain: stream
+  dtype: complex
+  label: out
+
+#  'file_format' specifies the version of the GRC yml format used in the file
+#  and should usually not be changed.
+file_format: 1
