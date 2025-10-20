@@ -1,0 +1,47 @@
+id: wavelet_db4
+label: Wavelet db4 (Tagged Stream)
+category: '[wavelet_ofdm]'
+flags: [python]
+
+parameters:
+- id: N
+  label: Block length N
+  dtype: int
+  default: 2048
+- id: L
+  label: Levels
+  dtype: int
+  default: 8
+- id: mode
+  label: Mode
+  dtype: enum
+  options: ['DWT', 'IDWT']
+  option_labels: ['DWT (analysis)', 'IDWT (synthesis)']
+  default: 'DWT'
+- id: pack_order
+  label: Pack order
+  dtype: enum
+  options: ['A|D']
+  option_labels: ['[cA_L, cD_L, ..., cD_1]']
+  default: 'A|D'
+- id: len_tag_key
+  label: Length tag key
+  dtype: string
+  default: 'packet_len'
+
+inputs:
+- domain: stream
+  dtype: complex
+
+outputs:
+- domain: stream
+  dtype: complex
+
+templates:
+  imports: from wavelet_ofdm import wavelet_db4_tsb
+  make: wavelet_db4_tsb.wavelet_db4_tsb(${N}, ${L}, ${mode}, ${pack_order}, ${len_tag_key})
+
+documentation: |-
+  Tagged-stream db4 untuk OFDM berbasis wavelet.
+  Mode DWT: waktu→koefisien. Mode IDWT: koefisien→waktu.
+  Gunakan 'Stream to Tagged Stream' upstream untuk menyuntik tag length = N pada len_tag_key.
